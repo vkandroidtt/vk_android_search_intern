@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.core.view.isVisible
@@ -31,7 +32,7 @@ class UserListFragment : Fragment() {
     var recycler: RecyclerView? = null
     var queryView: EditText? = null
     var errorView: TextView? = null
-    var loaderView: ProgressBar? = null
+    var shimmerContainer: LinearLayout? = null
 
     var feature: UserListFeature? = null
 
@@ -48,7 +49,7 @@ class UserListFragment : Fragment() {
         recycler = view.findViewById(R.id.recycler)
         queryView = view.findViewById(R.id.search_input)
         errorView = view.findViewById(R.id.error)
-        loaderView = view.findViewById(R.id.loader)
+        shimmerContainer = view.findViewById(R.id.shimmer_container)
         recycler?.adapter = adapter
         recycler?.layoutManager = LinearLayoutManager(view.context)
 
@@ -89,14 +90,13 @@ class UserListFragment : Fragment() {
     private fun renderState(viewState: UserListViewState) {
         when (viewState) {
             is UserListViewState.Error -> {
-                errorView?.isVisible = true
+                shimmerContainer?.isVisible = false
                 errorView?.text = viewState.errorText
-                loaderView?.isVisible = false
                 recycler?.isVisible = false
             }
 
             is UserListViewState.List -> {
-                loaderView?.isVisible = false
+                shimmerContainer?.isVisible = false
                 if (viewState.itemsList.isEmpty()) {
                     errorView?.isVisible = true
                     recycler?.isVisible = false
@@ -109,8 +109,8 @@ class UserListFragment : Fragment() {
             }
 
             UserListViewState.Loading -> {
+                shimmerContainer?.isVisible = true
                 errorView?.isVisible = false
-                loaderView?.isVisible = true
                 recycler?.isVisible = false
             }
         }
