@@ -35,8 +35,13 @@ class UserListFragment : Fragment() {
 
     var feature: UserListFeature? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return LayoutInflater.from(requireContext()).inflate(R.layout.fr_user_list, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return LayoutInflater.from(requireContext())
+            .inflate(R.layout.fr_user_list, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -53,12 +58,13 @@ class UserListFragment : Fragment() {
 
         lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                withContext(Dispatchers.Default) {
-                    launch {
-                        feature?.viewStateFlow?.collect {
-                            renderState(it)
-                        }
+                launch {
+                    feature?.viewStateFlow?.collect {
+                        renderState(it)
                     }
+                }
+
+                launch {
                     queryView?.asFlow()?.collect {
                         feature?.submitAction(UserListAction.QueryChanged(it))
                     }
@@ -66,10 +72,8 @@ class UserListFragment : Fragment() {
             }
         }
 
-        lifecycleScope.launch {
-            withContext(Dispatchers.Default) {
-                feature?.submitAction(UserListAction.Init)
-            }
+        lifecycleScope.launch(Dispatchers.Default) {
+            feature?.submitAction(UserListAction.Init)
         }
     }
 
@@ -90,6 +94,7 @@ class UserListFragment : Fragment() {
                 loaderView?.isVisible = false
                 recycler?.isVisible = false
             }
+
             is UserListViewState.List -> {
                 loaderView?.isVisible = false
                 if (viewState.itemsList.isEmpty()) {
@@ -102,6 +107,7 @@ class UserListFragment : Fragment() {
                     adapter.setUsers(viewState.itemsList)
                 }
             }
+
             UserListViewState.Loading -> {
                 errorView?.isVisible = false
                 loaderView?.isVisible = true
