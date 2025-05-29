@@ -48,7 +48,7 @@ class UserListFeature : MVIFeature, ViewModel() {
     private fun createViewState(state: UserListState): UserListViewState {
         return when {
             state.isLoading -> UserListViewState.Loading
-            state.error.isNullOrBlank() -> UserListViewState.Error(state.error)
+            state.error != null -> UserListViewState.Error(state.error)
             else -> UserListViewState.List(state.items)
         }
     }
@@ -64,11 +64,15 @@ class UserListFeature : MVIFeature, ViewModel() {
             try {
                 val users = withContext(Dispatchers.IO) {
                     if (query.isBlank()) {
+                        Log.d("MY_LOG", "${usersRepository.getUsers()}")
                         usersRepository.getUsers()
                     } else {
                         usersRepository.searchUsers(query)
                     }
                 }
+
+                Log.d("MY_LOG", "Loaded users: ${users.size}")
+
                 submitAction(UserListAction.UsersLoaded(users))
             } catch (e: Exception) {
                 Log.e("DIMAA", e.toString())

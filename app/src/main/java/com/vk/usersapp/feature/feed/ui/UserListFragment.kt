@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.core.view.isVisible
@@ -31,19 +32,24 @@ class UserListFragment : Fragment() {
     var recycler: RecyclerView? = null
     var queryView: EditText? = null
     var errorView: TextView? = null
-    var loaderView: ProgressBar? = null
+    var shimmerContainer: LinearLayout? = null
 
     var feature: UserListFeature? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return LayoutInflater.from(requireContext()).inflate(R.layout.fr_user_list, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return LayoutInflater.from(requireContext())
+            .inflate(R.layout.fr_user_list, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         recycler = view.findViewById(R.id.recycler)
         queryView = view.findViewById(R.id.search_input)
         errorView = view.findViewById(R.id.error)
-        loaderView = view.findViewById(R.id.loader)
+        shimmerContainer = view.findViewById(R.id.shimmer_container)
         recycler?.adapter = adapter
         recycler?.layoutManager = LinearLayoutManager(view.context)
 
@@ -53,12 +59,13 @@ class UserListFragment : Fragment() {
 
         lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                withContext(Dispatchers.Default) {
-                    launch {
-                        feature?.viewStateFlow?.collect {
-                            renderState(it)
-                        }
+                launch {
+                    feature?.viewStateFlow?.collect {
+                        renderState(it)
                     }
+                }
+
+                launch {
                     queryView?.asFlow()?.collect {
                         feature?.submitAction(UserListAction.QueryChanged(it))
                     }
@@ -66,10 +73,8 @@ class UserListFragment : Fragment() {
             }
         }
 
-        lifecycleScope.launch {
-            withContext(Dispatchers.Default) {
-                feature?.submitAction(UserListAction.Init)
-            }
+        lifecycleScope.launch(Dispatchers.Default) {
+            feature?.submitAction(UserListAction.Init)
         }
     }
 
@@ -85,13 +90,13 @@ class UserListFragment : Fragment() {
     private fun renderState(viewState: UserListViewState) {
         when (viewState) {
             is UserListViewState.Error -> {
-                errorView?.isVisible = true
+                shimmerContainer?.isVisible = false
                 errorView?.text = viewState.errorText
-                loaderView?.isVisible = false
                 recycler?.isVisible = false
             }
+
             is UserListViewState.List -> {
-                loaderView?.isVisible = false
+                shimmerContainer?.isVisible = false
                 if (viewState.itemsList.isEmpty()) {
                     errorView?.isVisible = true
                     recycler?.isVisible = false
@@ -102,9 +107,10 @@ class UserListFragment : Fragment() {
                     adapter.setUsers(viewState.itemsList)
                 }
             }
+
             UserListViewState.Loading -> {
+                shimmerContainer?.isVisible = true
                 errorView?.isVisible = false
-                loaderView?.isVisible = true
                 recycler?.isVisible = false
             }
         }
