@@ -28,6 +28,11 @@
         <provider android:authorities="com.example.mylib.MyLibProvider"
             android:name="com.example.mylib.MyLibProvider">
         </provider>
+        <provider
+            android:name="com.vk.usersapp.startup.StartupInitializer"
+            android:authorities="${applicationId}.startup"
+            android:exported="false" />
+
     </application>
 
 </manifest>
