@@ -10,8 +10,13 @@ import kotlinx.coroutines.launch
 
 class UserApplication : Application() {
     private val sdk: MyLibSDK by lazy { MyLibSDK() }
+    companion object {
+        private lateinit var instance: UserApplication
 
+        fun getInstance(): UserApplication = instance
+    }
     override fun onCreate() {
+        instance = this
         val beforeSdkInit = SystemClock.elapsedRealtime()
 
         super.onCreate()
@@ -21,6 +26,5 @@ class UserApplication : Application() {
             val sdkInitTime = afterSdkInit - beforeSdkInit
             StartTimeTracker.trackStartupTime(sdkInitTime)
         }
-        
     }
 }
