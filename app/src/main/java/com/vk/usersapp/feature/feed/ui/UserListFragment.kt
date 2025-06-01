@@ -27,19 +27,20 @@ import kotlinx.coroutines.withContext
 
 class UserListFragment : Fragment() {
 
-    val adapter: UserListAdapter by lazy { UserListAdapter() }
-    var recycler: RecyclerView? = null
-    var queryView: EditText? = null
-    var errorView: TextView? = null
-    var loaderView: ProgressBar? = null
+    private val adapter: UserListAdapter by lazy { UserListAdapter() }
+    private var recycler: RecyclerView? = null
+    private var queryView: EditText? = null
+    private var errorView: TextView? = null
+    private var loaderView: ProgressBar? = null
 
-    var feature: UserListFeature? = null
+    private var feature: UserListFeature? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return LayoutInflater.from(requireContext()).inflate(R.layout.fr_user_list, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         recycler = view.findViewById(R.id.recycler)
         queryView = view.findViewById(R.id.search_input)
         errorView = view.findViewById(R.id.error)
@@ -53,7 +54,6 @@ class UserListFragment : Fragment() {
 
         lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                withContext(Dispatchers.Default) {
                     launch {
                         feature?.viewStateFlow?.collect {
                             renderState(it)
@@ -63,13 +63,10 @@ class UserListFragment : Fragment() {
                         feature?.submitAction(UserListAction.QueryChanged(it))
                     }
                 }
-            }
         }
 
-        lifecycleScope.launch {
-            withContext(Dispatchers.Default) {
-                feature?.submitAction(UserListAction.Init)
-            }
+        viewLifecycleOwner.lifecycleScope.launch {
+            feature?.submitAction(UserListAction.Init)
         }
     }
 

@@ -40,4 +40,18 @@
         app:layout_constraintTop_toBottomOf="@id/title"
         tools:text="F1 pilot" />
 
+    <TextView
+        android:id="@+id/university"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:maxLines="1"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintBaseline_toBaselineOf="@id/subtitle"
+        app:layout_constraintStart_toEndOf="@id/subtitle"
+        app:layout_constraintTop_toBottomOf="@id/title"
+        tools:text="university" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
