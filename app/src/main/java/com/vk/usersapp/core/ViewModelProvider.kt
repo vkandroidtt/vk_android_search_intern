@@ -2,6 +2,7 @@ package com.vk.usersapp.core
 
 object ViewModelProvider {
 
+
     private val featureStorage = hashMapOf<Class<*>, MVIFeature>()
 
     fun <T> obtainFeature (clazz: Class<T>, featureCreator: () -> MVIFeature): MVIFeature {

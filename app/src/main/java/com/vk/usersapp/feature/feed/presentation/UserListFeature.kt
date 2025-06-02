@@ -22,7 +22,18 @@ import kotlinx.coroutines.withContext
 //          |            v
 //          |-------- Feature
 
+}
+sealed class UserListAction {
+    object Init : UserListAction()
+    data class QueryChanged(val query: String) : UserListAction()
+    data class FetchSuggestions(val query: String) : UserListAction()
+}
+
+sealed class UserListViewState {
+    data class Suggestions(val suggestions: List<String>) : UserListViewState()
+}
 class UserListFeature : MVIFeature, ViewModel() {
+
     private val mutableViewStateFlow = MutableStateFlow<UserListViewState>(UserListViewState.Loading)
     val viewStateFlow: StateFlow<UserListViewState> = mutableViewStateFlow.asStateFlow()
 

@@ -41,6 +41,12 @@ class UserListFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        suggestionsView = view.findViewById(R.id.suggestions_recycler)  // Инициализация
+        suggestionsView?.layoutManager = LinearLayoutManager(requireContext())
+        suggestionsView?.adapter = SuggestionsAdapter { query ->
+            queryView?.setText(query)
+            feature?.submitAction(UserListAction.QueryChanged(query))
+        }
         recycler = view.findViewById(R.id.recycler)
         queryView = view.findViewById(R.id.search_input)
         errorView = view.findViewById(R.id.error)
@@ -54,7 +60,10 @@ class UserListFragment : Fragment() {
 
         lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-
+                queryView?.asFlow()
+                    .debounce(300)  // Задержка для избежания спама
+                    .collect { query ->
+                        feature?.submitAction(UserListAction.FetchSuggestions(query))
                     launch {
                         feature?.viewStateFlow?.collect {
                             renderState(it)
@@ -102,10 +111,15 @@ class UserListFragment : Fragment() {
                     adapter.setUsers(viewState.itemsList)
                 }
             }
-            UserListViewState.Loading -> {
+            is UserListViewState.Loading -> {
                 errorView?.isVisible = false
                 loaderView?.isVisible = true
                 recycler?.isVisible = false
+            }
+                is UserListViewState.Suggestions -> {
+                    suggestionsView?.isVisible = true
+                    (suggestionsView?.adapter as? SuggestionsAdapter)?.submitList(viewState.suggestions)
+                }
             }
         }
     }
